@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  JAVASCRIPT
+  PYTHON
+  JAVA
+  CPP
+}
+
+enum RoomStatus {
+  ACTIVE
+  ENDED
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String
+  email    String @unique
+  password String
+
+  rooms    Room[]
+}
+
+model Room {
+  id          String     @id @default(cuid())
+  title       String
+  roomCode    String     @unique
+  currentCode String     @default("")
+  status      RoomStatus @default(ACTIVE)
+  language    Language
+
+  ownerId     String
+  owner       User @relation(fields: [ownerId], references: [id])
+}
