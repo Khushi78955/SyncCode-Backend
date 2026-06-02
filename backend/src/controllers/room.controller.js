@@ -1,4 +1,4 @@
-const { createRoomService, joinRoomService} = require("../services/room.service") 
+const { createRoomService, joinRoomService, getMyRoomsService} = require("../services/room.service") 
 
 const createRoom = async function(req, res){
     try{
@@ -27,7 +27,17 @@ const joinRoom = async function(req, res){
     }
 }
 
+const getMyRooms = async function(req, res){
+    try{
+        const result = await getMyRoomsService(req.user.userId);
+        res.json(result)
+    } catch(err){
+        res.status(400).json({
+            message: err.message
+        })
+    }
+
+}
 
 
-
-module.exports = {createRoom, joinRoom}
+module.exports = {createRoom, joinRoom, getMyRooms}

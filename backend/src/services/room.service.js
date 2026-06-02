@@ -33,4 +33,14 @@ const joinRoomService = async function(roomData){
     }
 }
 
-module.exports = {createRoomService, joinRoomService}
+const getMyRoomsService = async function(userId){
+    const rooms = await prisma.room.findMany({
+        where: {
+            ownerId: userId
+        }
+    })
+    return rooms;
+}
+
+
+module.exports = {createRoomService, joinRoomService, getMyRoomsService}
