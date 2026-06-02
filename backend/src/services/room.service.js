@@ -1,13 +1,13 @@
 const prisma = require("../config/db")
 
-const createRoomService = async function(roomData){
-    const {title, language, ownerId} = roomData;
+const createRoomService = async function(roomData, userId){
+    const {title, language} = roomData;
     const roomCode = Math.random().toString(36).substring(2,8).toUpperCase()
     const room = await prisma.room.create({
         data: {
             title,
             language,
-            ownerId,
+            ownerId: userId,
             roomCode
         }
     })

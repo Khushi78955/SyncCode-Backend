@@ -74,5 +74,18 @@ const loginService = async function(userData){
 
 
 
+const getMeService = async function(userId){
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        }
+    })
+    
+    const {password: _, ...safeUser } = user
+    return safeUser
+}
 
-module.exports = {signupService, loginService}
+
+
+
+module.exports = {signupService, loginService, getMeService}
