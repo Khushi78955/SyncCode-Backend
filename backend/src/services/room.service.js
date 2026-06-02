@@ -66,4 +66,25 @@ const deleteRoomService = async function(roomId, userId){
 }
 
 
-module.exports = {createRoomService, joinRoomService, getMyRoomsService, deleteRoomService}
+const updateRoomService = async function(roomId, userId, updateData){
+    const room = await prisma.room.findUnique({
+        where: {
+            id: roomId
+        }
+    })
+    if(!room){
+        throw new Error("Room not found")
+    }
+    if(room.ownerId !== userId){
+        throw new Error("Unauthorized")
+    }
+    const updatedRoom = await prisma.room.update({
+        where: {
+            id: roomId
+        },
+        data: updateData
+    })
+    return updatedRoom
+}
+
+module.exports = {createRoomService, joinRoomService, getMyRoomsService, deleteRoomService, updateRoomService}
