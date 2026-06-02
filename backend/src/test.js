@@ -1,7 +1,9 @@
-import prisma from "./config/db.js";
+const prisma = require("./config/db");
 
-const users = await prisma.user.findMany();
+async function test() {
+  const users = await prisma.user.findMany();
+  console.log(users);
+  await prisma.$disconnect();
+}
 
-console.log(users);
-
-await prisma.$disconnect();
+test();
