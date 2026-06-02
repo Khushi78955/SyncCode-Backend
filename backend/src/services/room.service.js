@@ -42,5 +42,28 @@ const getMyRoomsService = async function(userId){
     return rooms;
 }
 
+const deleteRoomService = async function(roomId, userId){
+    const room = await prisma.room.findUnique({
+        where: {
+            id: roomId
+        }
+    })
+    if(!room){
+        throw new Error("Room not found")
+    }
+    if(room.ownerId !== userId){
+        throw new Error("Unauthorized")
+    }
 
-module.exports = {createRoomService, joinRoomService, getMyRoomsService}
+    await prisma.room.delete({
+        where: {
+            id: roomId
+        }
+    })
+    return {
+        message: "Room deleted successfully"
+    }
+}
+
+
+module.exports = {createRoomService, joinRoomService, getMyRoomsService, deleteRoomService}
