@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket Test</title>
+</head>
+<body>
+    <h1>Socket.io Test</h1>
+    <input id="roomCode" placeholder="Room Code" />
+    <button onclick="joinRoom()">Join Room</button>
+    <input id="message" placeholder="Code" />
+    <button onclick="sendCode()">Send Code</button>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io("http://localhost:3000");
+        socket.on("connect", function(){
+            console.log("Connected:", socket.id)
+        })
+        function joinRoom(){
+            const roomCode = document.getElementById("roomCode").value;
+            socket.emit("join-room", roomCode)
+            console.log("Joined Room:", roomCode)
+        }
+
+        function sendCode(){
+            const roomCode = document.getElementById("roomCode").value;
+            const code = document.getElementById("message").value;
+            socket.emit("code-change", {
+                roomCode, 
+                code
+            })
+            console.log("Sent Code:", code)
+        }
+
+        socket.on("code-change", function(code){
+            console.log("Recieved Code: ", code)
+        })
+    </script>
+    
+    
+
+</body>
+</html>
