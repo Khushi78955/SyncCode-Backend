@@ -31,10 +31,15 @@
                 code
             })
             console.log("Sent Code:", code)
-        }
+        }                                                               
 
         socket.on("code-change", function(code){
             console.log("Recieved Code: ", code)
+        })
+
+        socket.on("sync-code", function(code){
+            console.log("Synced Code:", code)
+
         })
     </script>
     
