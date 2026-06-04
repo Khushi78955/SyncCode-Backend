@@ -1,4 +1,4 @@
-const {signupService, loginService,  getMeService} = require("../services/auth.service")
+const {signupService, loginService,  getMeService, refreshTokenService, logoutService} = require("../services/auth.service")
 
 const signup = async function (req, res){
     try{
@@ -36,4 +36,33 @@ const getMe = async function(req, res){
     
 }
 
-module.exports = {signup, login, getMe}
+
+const refreshToken = async function(req, res){
+    try{
+        const result = await refreshTokenService(req.body);
+        res.json(result);
+    } catch(err){
+        res.status(400).json({
+            message: err.message
+        })
+    }
+    
+}
+
+
+const logout = async function(req, res){
+    try{
+        const result = await logoutService(req.body);
+        res.json(result);
+    } catch(err){
+        res.status(400).json({
+            message: err.message
+        })
+    }
+    
+}
+
+
+
+
+module.exports = {signup, login, getMe, refreshToken, logout}

@@ -26,6 +26,7 @@ model User {
   password String
 
   rooms    Room[]
+  refreshTokens   RefreshToken[]
 }
 
 model Room {
@@ -38,4 +39,15 @@ model Room {
 
   ownerId     String
   owner       User @relation(fields: [ownerId], references: [id])
+}
+
+model RefreshToken{
+  id              String @id @default(cuid())
+  token           String @unique
+  expiresAt       DateTime
+  revoked         Boolean @default(false)
+  createdAt       DateTime @default(now())
+
+  userId          String    
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

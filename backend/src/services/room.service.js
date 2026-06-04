@@ -1,5 +1,6 @@
 const prisma = require("../config/db")
 
+
 const createRoomService = async function(roomData, userId){
     const {title, language} = roomData;
     const roomCode = Math.random().toString(36).substring(2,8).toUpperCase()
