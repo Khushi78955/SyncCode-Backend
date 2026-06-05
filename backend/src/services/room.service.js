@@ -1,4 +1,5 @@
 const prisma = require("../config/db")
+const AppError = require("../utils/error")
 
 
 const createRoomService = async function(roomData, userId){
@@ -25,7 +26,7 @@ const joinRoomService = async function(roomData){
         }
     })
     if(!room){
-        throw new Error("Room not found")
+        throw new AppError("Room not found", 404)
     }
 
     return {
@@ -50,10 +51,10 @@ const deleteRoomService = async function(roomId, userId){
         }
     })
     if(!room){
-        throw new Error("Room not found")
+        throw new AppError("Room not found", 404)
     }
     if(room.ownerId !== userId){
-        throw new Error("Unauthorized")
+        throw new AppError("Unauthorized", 403)
     }
 
     await prisma.room.delete({
@@ -74,10 +75,10 @@ const updateRoomService = async function(roomId, userId, updateData){
         }
     })
     if(!room){
-        throw new Error("Room not found")
+        throw new AppError("Room not found", 404)
     }
     if(room.ownerId !== userId){
-        throw new Error("Unauthorized")
+        throw new AppError("Unauthorized", 403)
     }
     const updatedRoom = await prisma.room.update({
         where: {

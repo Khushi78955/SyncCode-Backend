@@ -1,10 +1,11 @@
 const prisma = require("../config/db")
 const bcrypt = require("bcrypt");
 const {sendEmail, buildOtpEmail} = require("../utils/email")
+const AppError = require("../utils/error")
 
 const sendOtpService = async function(email){
     if(!email){
-        throw new Error("Email is required");
+        throw new AppError("Email is required", 400);
     }
     const otp = Math.floor(100000+Math.random()*900000).toString();
     const hashedOtp = await bcrypt.hash(otp, 10);
@@ -38,10 +39,10 @@ const sendOtpService = async function(email){
 
 const verifyOtpService = async function(email, otp){
     if(!email){
-        throw new Error("Email is required");
+        throw new AppError("Email is required", 400);
     }
     if(!otp){
-        throw new Error("Otp is required");
+        throw new AppError("Otp is required", 400);
     }
 
     const otpRecord = await prisma.otp.findUnique({
@@ -50,15 +51,15 @@ const verifyOtpService = async function(email, otp){
         }
     })
     if(!otpRecord){
-        throw new Error("OTP not found")
+        throw new AppError("OTP not found", 404)
     }
     if(otpRecord.expiresAt < new Date()){
-        throw new Error("OTP expired")
+        throw new AppError("OTP expired", 401)
     }
 
     const isOtpCorrect = await bcrypt.compare(otp, otpRecord.otp);
     if(!isOtpCorrect){
-        throw new Error("Invalid Otp")
+        throw new AppError("Invalid Otp", 401)
     }
 
     await prisma.otp.delete({

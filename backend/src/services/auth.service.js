@@ -6,6 +6,7 @@ const { createSession } = require("../utils/session");
 const { verifyOtpService } = require("./otp.service")
 const { client } = require("../utils/google")
 const axios = require("axios")
+const AppError = require("../utils/error")
 
 const signupService = async function (userData){
     const {name, email, password} = userData;
@@ -16,7 +17,7 @@ const signupService = async function (userData){
         }
     })
     if(existingUser){
-        throw new Error("User already exists")
+        throw new AppError("User already exists", 409)
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -51,15 +52,15 @@ const loginService = async function(userData){
         }
     })
     if(!user){
-        throw new Error("Invalid email or password");
+        throw new AppError("Invalid email or password", 401);
     }
 
     if(user.provider !== "local"){
-        throw new Error(`Please login with ${user.provider}`)
+        throw new AppError(`Please login with ${user.provider}`, 401)
     }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if(!isPasswordCorrect){
-        throw new Error("Invalid email or password")
+        throw new AppError("Invalid email or password", 401)
     }
 
     const {accessToken, refreshToken} = await createSession(user.id)
@@ -82,7 +83,7 @@ const getMeService = async function(userId){
         }
     })
     if(!user){
-        throw new Error("User not found")
+        throw new AppError("User not found", 404)
     }
     
     const {password: _, ...safeUser } = user
@@ -94,7 +95,7 @@ const getMeService = async function(userId){
 const refreshTokenService = async function(userData){
     const {refreshToken} = userData;
     if(!refreshToken){
-        throw new Error("Refresh token required")
+        throw new AppError("Refresh token required", 400)
     }
 
     let decoded;
@@ -102,7 +103,7 @@ const refreshTokenService = async function(userData){
         decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
 
     } catch(err){
-        throw new Error("Invalid refresh token")
+        throw new AppError("Invalid refresh token", 401)
     }
     
 
@@ -112,13 +113,13 @@ const refreshTokenService = async function(userData){
         }
     })
     if(!storedToken){
-        throw new Error("Refresh token not found")
+        throw new AppError("Refresh token not found", 404)
     }
     if(storedToken.revoked){
-        throw new Error("Refresh token revoked")
+        throw new AppError("Refresh token revoked", 401)
     }
     if(storedToken.expiresAt < new Date()){
-        throw new Error("Refresh token expired")
+        throw new AppError("Refresh token expired", 401)
     }
 
     const accessToken = generateAccessToken(decoded.userId)
@@ -133,13 +134,13 @@ const refreshTokenService = async function(userData){
 const logoutService = async function(userData){
     const {refreshToken} = userData;
     if(!refreshToken){
-        throw new Error("Refresh token required");
+        throw new AppError("Refresh token required", 400);
     }
 
     try{
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
     } catch(err){
-        throw new Error("Invalid refresh token")
+        throw new AppError("Invalid refresh token", 401)
     }
 
     const storedToken = await prisma.refreshToken.findUnique({
@@ -148,10 +149,10 @@ const logoutService = async function(userData){
         }
     })
     if(!storedToken){
-        throw new Error("Refresh token not found")
+        throw new AppError("Refresh token not found", 404)
     }
     if(storedToken.revoked){
-        throw new Error("Token already revoked")
+        throw new AppError("Token already revoked", 401)
     }
 
     await prisma.refreshToken.update({
@@ -172,7 +173,7 @@ const logoutService = async function(userData){
 
 const resetPasswordService = async function(email, otp, newPassword){
     if(!email || !otp || !newPassword){
-        throw new Error("Email, OTP and new password are required")
+        throw new AppError("Email, OTP and new password are required", 400)
     }
     await verifyOtpService(email, otp)
     const user = await prisma.user.findUnique({
@@ -181,7 +182,7 @@ const resetPasswordService = async function(email, otp, newPassword){
         }
     })
     if(!user){
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
@@ -201,7 +202,7 @@ const resetPasswordService = async function(email, otp, newPassword){
 
 const googleLoginService = async function(token){
     if(!token){
-        throw new Error("Google token is required");
+        throw new AppError("Google token is required", 400);
     }
     const ticket = await client.verifyIdToken({
         idToken: token,
@@ -210,10 +211,10 @@ const googleLoginService = async function(token){
 
     const payload = ticket.getPayload();
     if(!payload){
-        throw new Error("Invalid Google Token")
+        throw new AppError("Invalid Google Token", 401)
     }
     if(!payload.email_verified){
-        throw new Error("Google email not verified")
+        throw new AppError("Google email not verified", 401)
     }
 
     let user = await prisma.user.findUnique({
@@ -248,7 +249,7 @@ const googleLoginService = async function(token){
 
 const githubLoginService = async function(token){
     if(!token){
-        throw new Error("GitHub token is required");
+        throw new AppError("GitHub token is required", 400);
     }
 
     const {data: githubUser} = await axios.get(
@@ -270,7 +271,7 @@ const githubLoginService = async function(token){
     )
     const primaryEmail = emails.find(email => email.primary)
     if(!primaryEmail){
-        throw new Error("GitHub email not found")
+        throw new AppError("GitHub email not found", 404)
     }
 
     
@@ -303,7 +304,7 @@ const githubLoginService = async function(token){
 
 const discordLoginService = async function(token){
     if(!token){
-        throw new Error("Discord token is required");
+        throw new AppError("Discord token is required", 400);
     }
 
     const {data: discordUser} = await axios.get(
@@ -317,7 +318,7 @@ const discordLoginService = async function(token){
 
     
     if(!discordUser.email){
-        throw new Error("Discord email not found")
+        throw new AppError("Discord email not found", 404)
     }
 
     
