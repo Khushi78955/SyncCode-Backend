@@ -43,6 +43,7 @@ const deleteRoom = async function(req, res, next){
     }
     
 }
+
 const updateRoom = async function(req, res, next){
     try{
         const result = await updateRoomService(req.params.id, req.user.userId, req.body);

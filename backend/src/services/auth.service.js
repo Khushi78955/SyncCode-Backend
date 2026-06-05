@@ -5,6 +5,7 @@ const { generateAccessToken } = require("../utils/jwt");
 const { createSession } = require("../utils/session");
 const { verifyOtpService } = require("./otp.service")
 const { client } = require("../utils/google")
+const axios = require("axios")
 
 const signupService = async function (userData){
     const {name, email, password} = userData;
@@ -196,6 +197,7 @@ const resetPasswordService = async function(email, otp, newPassword){
 
 }
 
+
 const googleLoginService = async function(token){
     if(!token){
         throw new Error("Google token is required");
@@ -241,4 +243,61 @@ const googleLoginService = async function(token){
 }
 
 
-module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService}
+
+
+const githubLoginService = async function(token){
+    if(!token){
+        throw new Error("GitHub token is required");
+    }
+
+    const {data: githubUser} = await axios.get(
+        "https://api.github.com/user",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    )
+
+    const {data: emails} = await axios.get(
+        "https://api.github.com/user/emails",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    )
+    const primaryEmail = emails.find(email => email.primary)
+    if(!primaryEmail){
+        throw new Error("GitHub email not found")
+    }
+
+    
+    let user = await prisma.user.findUnique({
+        where: {
+            email: primaryEmail.email
+        }
+    })
+    if(!user){
+        user = await prisma.user.create({
+            data: {
+                name: githubUser.name || githubUser.login,
+                email: primaryEmail.email,
+                password: null,
+                provider: "github"
+            }
+        })
+    }
+
+    const {accessToken, refreshToken} = await createSession(user.id);
+    const { password: _, ...safeUser } = user;
+    return {
+        message: "Github login successful",
+        user: safeUser,
+        accessToken,
+        refreshToken
+    }
+    
+}
+
+module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService, githubLoginService}
