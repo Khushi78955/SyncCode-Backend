@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 
-const {signup, login, getMe, refreshToken, logout, resetPassword, googleLogin, githubLogin} = require("../controllers/auth.controller");
+const {signup, login, getMe, refreshToken, logout, resetPassword, googleLogin, githubLogin, discordLogin} = require("../controllers/auth.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
 
@@ -14,4 +14,5 @@ router.post("/refresh-token", refreshToken)
 router.post("/logout", logout)
 router.post("/google", googleLogin)
 router.post("/github", githubLogin)
+router.post("/discord", discordLogin)
 module.exports = router;

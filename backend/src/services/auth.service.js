@@ -25,7 +25,8 @@ const signupService = async function (userData){
         data: {
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            provider: "local"
         }
     })
 
@@ -300,4 +301,52 @@ const githubLoginService = async function(token){
     
 }
 
-module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService, githubLoginService}
+const discordLoginService = async function(token){
+    if(!token){
+        throw new Error("Discord token is required");
+    }
+
+    const {data: discordUser} = await axios.get(
+        "https://discord.com/api/users/@me",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    )
+
+    
+    if(!discordUser.email){
+        throw new Error("Discord email not found")
+    }
+
+    
+    let user = await prisma.user.findUnique({
+        where: {
+            email: discordUser.email
+        }
+    })
+    if(!user){
+        user = await prisma.user.create({
+            data: {
+                name: discordUser.global_name || discordUser.username,
+                email: discordUser.email,
+                password: null,
+                provider: "discord"
+            }
+        })
+    }
+
+    const {accessToken, refreshToken} = await createSession(user.id);
+    const { password: _, ...safeUser } = user;
+    return {
+        message: "Discord login successful",
+        user: safeUser,
+        accessToken,
+        refreshToken
+    }
+    
+}
+
+module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService, githubLoginService, discordLoginService}
+
