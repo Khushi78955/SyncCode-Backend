@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { generateAccessToken } = require("../utils/jwt");
 const { createSession } = require("../utils/session");
+const { verifyOtpService } = require("./otp.service")
 
 const signupService = async function (userData){
     const {name, email, password} = userData;
@@ -161,4 +162,35 @@ const logoutService = async function(userData){
     }
 }
 
-module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService}
+
+
+const resetPasswordService = async function(email, otp, newPassword){
+    if(!email || !otp || !newPassword){
+        throw new Error("Email, OTP and new password are required")
+    }
+    await verifyOtpService(email, otp)
+    const user = await prisma.user.findUnique({
+        where: {
+            email
+        }
+    })
+    if(!user){
+        throw new Error("User not found");
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+        where: {
+            email
+        },
+        data: {
+            password: hashedPassword
+        }
+    })
+    return {
+        message: "Password reset successfully"
+    }
+
+}
+
+
+module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService}
