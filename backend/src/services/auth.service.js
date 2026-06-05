@@ -52,8 +52,8 @@ const loginService = async function(userData){
         throw new Error("Invalid email or password");
     }
 
-    if(!user.password){
-        throw new Error("Please login with Google")
+    if(user.provider !== "local"){
+        throw new Error(`Please login with ${user.provider}`)
     }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if(!isPasswordCorrect){
@@ -223,7 +223,8 @@ const googleLoginService = async function(token){
             data: {
                 name: payload.name,
                 email: payload.email,
-                password: null
+                password: null,
+                provider: "google"
             }
         })
     }

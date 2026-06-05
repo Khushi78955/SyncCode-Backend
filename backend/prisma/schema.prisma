@@ -24,6 +24,7 @@ model User {
   name     String
   email    String @unique
   password String?
+  provider  String @default("local")
 
   rooms    Room[]
   refreshTokens   RefreshToken[]
