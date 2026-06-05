@@ -15,9 +15,9 @@ router.get("/me", authMiddleware, getMe)
 router.post("/reset-password", apiLimiter, validate(resetPasswordSchema), resetPassword)
 router.post("/refresh-token", validate(refreshTokenSchema), refreshToken)
 router.post("/logout", validate(logoutSchema), logout)
-router.post("/google", validate(oauthSchema), googleLogin)
-router.post("/github", validate(oauthSchema), githubLogin)
-router.post("/discord", validate(oauthSchema), discordLogin)
+router.post("/google", apiLimiter, validate(oauthSchema), googleLogin)
+router.post("/github", apiLimiter, validate(oauthSchema), githubLogin)
+router.post("/discord", apiLimiter, validate(oauthSchema), discordLogin)
 
 
 module.exports = router;
