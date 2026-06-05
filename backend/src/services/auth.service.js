@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { generateAccessToken } = require("../utils/jwt");
 const { createSession } = require("../utils/session");
 const { verifyOtpService } = require("./otp.service")
+const { client } = require("../utils/google")
 
 const signupService = async function (userData){
     const {name, email, password} = userData;
@@ -51,6 +52,9 @@ const loginService = async function(userData){
         throw new Error("Invalid email or password");
     }
 
+    if(!user.password){
+        throw new Error("Please login with Google")
+    }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if(!isPasswordCorrect){
         throw new Error("Invalid email or password")
@@ -192,5 +196,48 @@ const resetPasswordService = async function(email, otp, newPassword){
 
 }
 
+const googleLoginService = async function(token){
+    if(!token){
+        throw new Error("Google token is required");
+    }
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID
+    })
 
-module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService}
+    const payload = ticket.getPayload();
+    if(!payload){
+        throw new Error("Invalid Google Token")
+    }
+    if(!payload.email_verified){
+        throw new Error("Google email not verified")
+    }
+
+    let user = await prisma.user.findUnique({
+        where: {
+            email: payload.email
+        }
+    })
+    if(!user){
+        user = await prisma.user.create({
+            data: {
+                name: payload.name,
+                email: payload.email,
+                password: null
+            }
+        })
+    }
+
+    const {accessToken, refreshToken} = await createSession(user.id);
+    const { password: _, ...safeUser } = user;
+    return {
+        message: "Google login successful",
+        user: safeUser,
+        accessToken,
+        refreshToken
+    }
+    
+}
+
+
+module.exports = {signupService, loginService, getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService}

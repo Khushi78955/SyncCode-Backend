@@ -1,4 +1,4 @@
-const {signupService, loginService,  getMeService, refreshTokenService, logoutService, resetPasswordService} = require("../services/auth.service")
+const {signupService, loginService,  getMeService, refreshTokenService, logoutService, resetPasswordService, googleLoginService} = require("../services/auth.service")
 
 const signup = async function (req, res, next){
     try{
@@ -63,5 +63,15 @@ const resetPassword = async function(req, res, next){
 
 }
 
+const googleLogin = async function(req, res, next){
+    try{
+        const result = await googleLoginService(req.body.token);
+        res.json(result)
+    } catch(err){
+        next(err)
+    }
+    
+}
 
-module.exports = {signup, login, getMe, refreshToken, logout, resetPassword}
+
+module.exports = {signup, login, getMe, refreshToken, logout, resetPassword, googleLogin}
