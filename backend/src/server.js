@@ -1,7 +1,13 @@
+require("dotenv").config()
+require("./config/env")
+
+
 const app = require("./app");
 const http = require("http");
 const {Server} = require("socket.io")
 const prisma = require("./config/db")
+
+
 
 const PORT = 3000;
 
