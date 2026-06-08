@@ -1,7 +1,20 @@
-import Login from "./pages/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-function App(){
-  return <Login />
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import CreateRoom from "./pages/CreateRoom";
+
+function App() {
+  return(
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/create-room" element={<CreateRoom />} />
+      </Routes>
+    </BrowserRouter>
+  )
+
 }
 
 export default App;

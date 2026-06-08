@@ -1,7 +1,8 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom"
 
 function Login(){
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
@@ -13,13 +14,21 @@ function Login(){
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
-                        email: email,
-                        password: password
+                        email,
+                        password
                     })
                 }
             )
             const data = await response.json()
-            console.log(data);
+            console.log(data)
+            if(!response.ok){
+                alert(data.message);
+                return;
+            }
+            localStorage.setItem("accessToken", data.accessToken)
+            localStorage.setItem("refreshToken", data.refreshToken)
+            navigate("/dashboard")
+        
         } catch(err){
             console.log(err)
         }
@@ -28,8 +37,16 @@ function Login(){
     return (
         <div>
             <h1>Login</h1>
+
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Enter Email"/>
+
+            <br />
+            <br />
+
             <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter password" />
+
+            <br />
+            <br />
 
             <button onClick={handleLogin}>Login</button>
 
