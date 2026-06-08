@@ -17,27 +17,5 @@ router.patch("/:id", authMiddleware, validate(updateRoomSchema), updateRoom)
 router.get("/my-rooms",authMiddleware, getMyRooms)
 router.delete("/:id", authMiddleware, deleteRoom)
 
-router.get("/demo", (req, res) => {
-  res.json([
-    {
-      id: 1,
-      name: "DSA Practice",
-      language: "JavaScript",
-      owner: "Khushi",
-    },
-    {
-      id: 2,
-      name: "System Design",
-      language: "Python",
-      owner: "Rohan",
-    },
-    {
-      id: 3,
-      name: "React Interview",
-      language: "TypeScript",
-      owner: "Priya",
-    },
-  ]);
-});
 
 module.exports = router;
