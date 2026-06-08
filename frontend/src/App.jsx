@@ -1,28 +1,39 @@
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import RoomCard from "./components/RoomCard";
 import Footer from "./components/Footer";
 
+
 function App(){
- const rooms = [
-  {
-    id: 1,
-    name: "DSA Practice",
-    language: "JavaScript",
-    owner: "Khushi"
-  },
-  {
-    id: 2,
-    name: "System Design",
-    language: "Python",
-    owner: "Rohan"
-  },
-  {
-    id: 3,
-    name: "React Interview",
-    language: "TypeScript",
-    owner: "Priya"
+
+  const [rooms, setRooms] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+
+  useEffect(() => {
+    async function fetchRooms(){
+      try{
+        const response = await fetch("http://localhost:3000/api/rooms/demo")
+        const data = await response.json()
+        setRooms(data);
+        setLoading(false)
+      } catch(err){
+        setError("Failed to fetch rooms");
+        setLoading(false)
+      }
+    }
+    fetchRooms()
+  }, [])
+
+
+  if (loading) {
+    return <p>Loading Rooms...</p>;
   }
-];
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return(
     <div>
@@ -32,8 +43,8 @@ function App(){
 
       {rooms.map((room) => (
         <RoomCard 
-          key={room.id} 
-          room={room}
+          key = {room.id}
+          room = {room}
         />
       ))}
 
