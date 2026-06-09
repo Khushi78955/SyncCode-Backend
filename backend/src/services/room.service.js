@@ -44,6 +44,19 @@ const getMyRoomsService = async function(userId){
     return rooms;
 }
 
+const getRoomByIdService = async function(roomId){
+    const room = await prisma.room.findUnique({
+        where: {
+            id: roomId
+        }
+    })
+    if(!room){
+        throw new AppError("Room not found", 404)
+    }
+    return room;
+}
+
+
 const deleteRoomService = async function(roomId, userId){
     const room = await prisma.room.findUnique({
         where: {
@@ -89,4 +102,4 @@ const updateRoomService = async function(roomId, userId, updateData){
     return updatedRoom
 }
 
-module.exports = {createRoomService, joinRoomService, getMyRoomsService, deleteRoomService, updateRoomService}
+module.exports = {createRoomService, joinRoomService, getMyRoomsService, deleteRoomService, updateRoomService, getRoomByIdService}
